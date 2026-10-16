@@ -6,7 +6,7 @@ RUN gradle bootJar --no-daemon
 
 FROM amazoncorretto:21-alpine-jdk
 LABEL org.opencontainers.image.source="https://github.com/DataDog/vulnerable-java-application/"
-EXPOSE 8080
+EXPOSE 8000
 RUN mkdir /app
 WORKDIR /app
 COPY --from=builder /home/gradle/src/build/libs/*.jar /app/spring-boot-application.jar
