@@ -49,8 +49,12 @@ public class MainController {
   @RequestMapping(method=RequestMethod.POST, value="/test-website", consumes="application/json")
   public ResponseEntity<String> testWebsite(@RequestBody WebsiteTestRequest request) {
     log.info("Testing website " + request.url);
-    String result = websiteTestService.testWebsite(request);
-    return new ResponseEntity<>(result, HttpStatus.OK);
+    try {
+      String result = websiteTestService.testWebsite(request);
+      return new ResponseEntity<>(result, HttpStatus.OK);
+    } catch (IllegalArgumentException e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
   }
 
   @RequestMapping(method=RequestMethod.POST, value="/view-file", consumes="application/json")
@@ -67,3 +71,4 @@ public class MainController {
   }
 
 }
+
