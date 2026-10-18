@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 public class DomainTestService {
 
   final static int timeoutMs = 10_000;
-  final static Pattern domainValidationRegex = Pattern.compile("^((?!-))(xn--)?[a-z0-9][a-z0-9-_]{0,61}[a-z0-9]{0,1}\\.(xn--)?([a-z0-9\\-]{1,61}|[a-z0-9-]{1,30}\\.[a-z]{2,})", Pattern.CASE_INSENSITIVE);
+  final static Pattern domainValidationRegex = Pattern.compile("^((?!-))(xn--)?[a-z0-9][a-z0-9-_]{0,61}[a-z0-9]{0,1}\\.(xn--)?([a-z0-9\\-]{1,61}|[a-z0-9-]{1,30}\\.[a-z]{2,})$", Pattern.CASE_INSENSITIVE);
 
   public String testDomain(String domainName) throws DomainTestException {
     if (!isValidDomainName(domainName)) {
@@ -22,8 +22,7 @@ public class DomainTestService {
     }
 
     try {
-      //TODO use ProcessBuilder which looks cleaner
-      Process process = Runtime.getRuntime().exec(new String[] {"sh", "-c", "ping -c 1 " + domainName});
+      Process process = new ProcessBuilder("ping", "-c", "1", domainName).start();
       if (!process.waitFor(timeoutMs, TimeUnit.MILLISECONDS)) {
         throw new UnableToTestDomainException("Timed out pinging domain");
       }
@@ -42,6 +41,6 @@ public class DomainTestService {
 
   private static boolean isValidDomainName(String domainName) {
     Matcher matcher = domainValidationRegex.matcher(domainName);
-    return matcher.find();
+    return matcher.matches();
   }
 }
