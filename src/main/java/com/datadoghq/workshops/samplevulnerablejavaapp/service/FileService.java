@@ -5,16 +5,25 @@ import com.datadoghq.workshops.samplevulnerablejavaapp.exception.FileReadExcepti
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Service
 public class FileService {
     final static String ALLOWED_PREFIX = "/tmp/files/";
 
     public String readFile(String path) throws FileForbiddenFileException, FileReadException {
-        if(!path.startsWith(ALLOWED_PREFIX)) {
+        Path canonical;
+        try {
+            canonical = Paths.get(path).toRealPath(LinkOption.NOFOLLOW_LINKS);
+        } catch (IOException e) {
+            throw new FileReadException(e.getMessage());
+        }
+        if (!canonical.startsWith(Path.of(ALLOWED_PREFIX))) {
             throw new FileForbiddenFileException("You are not allowed to read " + path);
         }
-        try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(canonical.toFile()))) {
             StringBuilder sb = new StringBuilder();
             String line = br.readLine();
 
