@@ -31,9 +31,16 @@ public class MainController {
   @Autowired
   private FileService fileService;
 
+  private static String sanitize(String value) {
+    if (value == null) {
+      return null;
+    }
+    return value.replaceAll("[\\r\\n\\t\\x00-\\x1F\\x7F]", "_");
+  }
+
   @RequestMapping(method=RequestMethod.POST, value="/test-domain", consumes="application/json")
   public ResponseEntity<String> testDomain(@RequestBody DomainTestRequest request) {
-    log.info("Testing domain " + request.domainName);
+    log.info("Testing domain {}", sanitize(request.domainName));
     try {
       String result = domainTestService.testDomain(request.domainName);
       return new ResponseEntity<>(result, HttpStatus.OK);
@@ -48,14 +55,14 @@ public class MainController {
 
   @RequestMapping(method=RequestMethod.POST, value="/test-website", consumes="application/json")
   public ResponseEntity<String> testWebsite(@RequestBody WebsiteTestRequest request) {
-    log.info("Testing website " + request.url);
+    log.info("Testing website {}", sanitize(request.url));
     String result = websiteTestService.testWebsite(request);
     return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
   @RequestMapping(method=RequestMethod.POST, value="/view-file", consumes="application/json")
   public ResponseEntity<String> viewFile(@RequestBody ViewFileRequest request) {
-    log.info("Reading file " + request.path);
+    log.info("Reading file {}", sanitize(request.path));
     try {
       String result = fileService.readFile(request.path);
       return new ResponseEntity<>(result, HttpStatus.OK);
