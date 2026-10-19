@@ -6,7 +6,7 @@ RUN gradle bootJar --no-daemon
 
 FROM amazoncorretto:21-alpine-jdk
 LABEL org.opencontainers.image.source="https://github.com/DataDog/vulnerable-java-application/"
-EXPOSE 8080
+EXPOSE 8000
 RUN mkdir /app
 WORKDIR /app
 COPY --from=builder /home/gradle/src/build/libs/*.jar /app/spring-boot-application.jar
@@ -19,5 +19,11 @@ RUN wget -O dd-java-agent.jar https://github.com/DataDog/dd-trace-java/releases/
 # Utility
 RUN apk add curl wget
 RUN mkdir -p /tmp/files && echo "hello" > /tmp/files/hello.txt && echo "world" > /tmp/files/foo.txt
+
+# Create non-root user and set directory ownership
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup && \
+    chown -R appuser:appgroup /app /tmp/files
+
+USER appuser
 
 CMD ["java", "-javaagent:/app/dd-java-agent.jar", "-jar", "/app/spring-boot-application.jar"]
